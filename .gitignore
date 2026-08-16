@@ -6,6 +6,9 @@ bin/
 *.so
 *.dylib
 
+# Build Outputs
+results/
+
 # Test coverage
 coverage.out
 

@@ -49,6 +49,14 @@ func main() {
 	// 3. 전체 요청을 받을 상위 라우터 생성
 	rootRouter := http.NewServeMux()
 	rootRouter.HandleFunc("GET /healthz", healthzHandler)
+	
+	// 테스트 전용 엔드포인트는 명시적으로 켠 경우에만 등록한다.
+	// 운영 이미지에 임의 지연 엔드포인트가 남으면 그 자체가 DoS 표면이 된다.
+	if cfg.EnableTestEndpoints {
+		log.Println("WARNING: test endpoints enabled (/_test/*) — do not use in production")
+		rootRouter.HandleFunc("GET /_test/slow", handler.SlowHandler)
+	}
+
 	rootRouter.Handle("/", appRouter)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
