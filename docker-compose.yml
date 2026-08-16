@@ -1,0 +1,30 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: api-server:local
+
+    ports:
+      - "${HOST_PORT:-8080}:${PORT:?PORT must be set}"
+
+    environment:
+      PORT: "${PORT:?PORT must be set}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET must be set}"
+
+    # Phase 1은 Compose 상태 확인을 위해 Alpine의 wget을 사용하며,
+    # Phase 8 distroless 전환 시 쉘 비의존 probe로 교체한다.
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider -q http://127.0.0.1:$${PORT}/healthz || exit 1"
+        ]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+
+    # 애플리케이션 shutdown 8초 + 프로세스 종료 여유 2초
+    stop_grace_period: 10s
